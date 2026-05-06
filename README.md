@@ -1,10 +1,11 @@
 # Tic-Tac-Toe Game – Playwright Tests
 
-This repository contains a simple Tic-Tac-Toe game along with automated end-to-end tests written using Playwright.
+This repository contains a simple Tic-Tac-Toe game along with automated end-to-end tests written using Playwright. The project is structured using **Object-Oriented Programming (OOP)** principles to ensure modularity, readability, and maintainability.
 
 ## 📌 Project Overview
 
-The project demonstrates how to test a browser-based game using Playwright. The game itself is implemented as a static HTML file, and Playwright is used to validate gameplay scenarios such as moves, win conditions, and UI behavior.
+The project demonstrates how to test a browser-based game using Playwright while following OOP design practices. The game logic and test structure are organized in a way that promotes reusability and clear separation of concerns.
+
 
 ## 🚀 Getting Started
 
