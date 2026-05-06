@@ -87,5 +87,57 @@ The Playwright tests cover:
 * Modify test cases in the `tests/` folder to expand coverage.
 
 ---
+## ⚙️ CI/CD (GitHub Actions)
+
+This repository includes a GitHub Actions workflow for running Playwright tests in a CI environment:
+
+```bash
+.github/workflows/playwright.yml
+```
+
+```bash
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    container:
+      image: mcr.microsoft.com/playwright:v1.45.0-jammy
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run Playwright tests
+        run: npx playwright test
+
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+```
+
+The workflow is configured to use the official Playwright Docker container image, ensuring a consistent and reliable test environment without needing to install browsers on every run.
+
+### 📌 Note
+
+This workflow is included primarily for **demonstration and showcase purposes**. At this stage, it is not intended to run on every push to the repository.
+
+If needed, the workflow triggers can be easily adjusted (e.g., manual runs or specific branches only) depending on project requirements.
+
+This approach highlights how the project can be integrated into a CI/CD pipeline while keeping repository activity lightweight.
 
 Feel free to contribute or improve the tests!
