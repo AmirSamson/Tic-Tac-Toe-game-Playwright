@@ -73,9 +73,6 @@ test('Board disables after game ends', async ({ page }) => {
   const gamePage = new TicTacToePage(page);
   await gamePage.goto();
   await gamePage.register('Amir1');
-  await gamePage.playGameUntilOver(5);
-  const before = await gamePage.getAllCellStates();
-  await gamePage.clickEmptyCell();
-  const after = await gamePage.getAllCellStates();
-  expect(after).toEqual(before);
+  await gamePage.playGameUntilEnd(page);
+  await gamePage.checkForNoMovesAllowed(page);
 });

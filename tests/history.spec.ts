@@ -2,14 +2,14 @@ import {test, expect} from '@playwright/test';
 import { TicTacToePage } from '../pages/TicTacToePage';
 import { getActiveResourcesInfo } from 'node:process';
 
-test('Board disables after game ends', async ({ page }) => {
+test('Game recorded after completion', async ({ page }) => {
   const gamePage = new TicTacToePage(page);
   await gamePage.goto();
   await gamePage.register('Amir1');
 
-  await gamePage.playGameThreeMoves(page)
+  await gamePage.playGameUntilEnd(page)
   await gamePage.goToHistory()
-  await expect(gamePage.historyNav).toBeVisible();
+  await expect(gamePage.historyRow).toHaveCount(1);
 });
 
 test('History persists after refresh', async ({ page }) => {
@@ -17,12 +17,12 @@ test('History persists after refresh', async ({ page }) => {
   await gamePage.goto();
   await gamePage.register('Amir1');
 
-  await gamePage.playGameThreeMoves(page)
+  await gamePage.playGameUntilEnd(page)
   await gamePage.goToHistory()
   await expect(gamePage.historyRow).toBeVisible();
   await page.reload();
   await gamePage.goToHistory()
-  await expect(gamePage.historyRow).toBeVisible();
+  await expect(gamePage.historyRow).toHaveCount(1);
 });
 
 
@@ -31,9 +31,9 @@ test('Clear history', async ({ page }) => {
   await gamePage.goto();
   await gamePage.register('Amir1');
 
-  await gamePage.playGameThreeMoves(page)
+  await gamePage.playGameUntilEnd(page)
   await gamePage.goToHistory()
-  await expect(gamePage.historyRow).toBeVisible();
+  await expect(gamePage.historyRow).toHaveCount(1);
   await gamePage.historyClear
   
     page.once('dialog', dialog => {
@@ -42,5 +42,5 @@ test('Clear history', async ({ page }) => {
         return dialog.accept();
     });    
   await gamePage.historyClear.click();
-  await expect(gamePage.historyRow).not.toBeVisible();
+  await expect(gamePage.historyRow).toHaveCount(0);
 });

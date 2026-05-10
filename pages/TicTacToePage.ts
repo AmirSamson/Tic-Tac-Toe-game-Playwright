@@ -19,6 +19,10 @@ export class TicTacToePage {
   readonly hintButton: Locator;
   readonly difficultySelect: Locator;
 
+  readonly filledBefore: Locator;
+  readonly filledAfter:Locator;
+  readonly emptyCellsAfter: Locator;
+
   readonly playNav: Locator;
   readonly historyNav: Locator;
   readonly historyRow: Locator;
@@ -45,6 +49,10 @@ export class TicTacToePage {
     this.resetButton = page.getByTestId('btn-reset');
     this.hintButton = page.getByTestId('btn-hint');
     this.difficultySelect = page.getByTestId('select-difficulty');
+
+    this.filledBefore = page.locator('[data-state="x"], [data-state="o"]');
+    this.filledAfter = page.locator('[data-state="x"], [data-state="o"]');
+    this.emptyCellsAfter = page.locator('[data-state="empty"]:not([disabled])');
 
     this.playNav = page.getByTestId('nav-play');
     this.historyNav = page.getByTestId('nav-history');
@@ -91,15 +99,17 @@ export class TicTacToePage {
     return this.page.getByTestId(`cell-${index}`);
   }
 
+  async getGameStatus() {
+  return await this.status.getAttribute('data-status');
+  }
+
   async getCellState(index: number): Promise<string> {
     const cell = this.page.getByTestId(`cell-${index}`);
     return await cell.getAttribute('data-state') || '';
   }
 
-  async getAllCellStates(): Promise<string[]> {
-    return await this.cells.evaluateAll(els =>
-      els.map(el => el.getAttribute('data-state') || '')
-    );
+  async countMarks(type: 'x' | 'o') {
+    return await this.page.locator(`[data-state="${type}"]`).count();
   }
 
   async getAllCellDetails(): Promise<Array<{ state: string | null; class: string; aria: string | null }>> {
@@ -121,6 +131,15 @@ export class TicTacToePage {
       await emptyCell.click();
     }
   }
+   async checkForNoMovesAllowed (page:Page): Promise<void> {
+    const beforeFillCounter=await this.filledBefore.count();
+
+    if (await this.emptyCellsAfter.count() > 0) {
+      await this.emptyCellsAfter.first().click();
+    }
+    const afterFillCounter= await this.filledAfter.count();
+    expect(afterFillCounter).toBe(beforeFillCounter);
+ }
 
   async resetGame() {
     await this.resetButton.click();
@@ -143,39 +162,25 @@ export class TicTacToePage {
     return status === 'win' || status === 'draw' || status === 'computer';
   }
 
-  async playGameThreeMoves(page:Page): Promise<void> {
-    const status = page.locator('.status');
-    const cells = page.locator('[data-testid^="cell-"]');
+  async playGameUntilEnd(page:Page): Promise<void> {
+    const status = page.locator('[data-testid="status"]');
 
-    for (let i = 0; i < 3; i++) {
-      
-      const emptyCell = page.locator('[data-state="empty"]').first();
-      if (await emptyCell.count() !== 0) {
-      
-      await emptyCell.click();
+    while (true) {
+      const gameStatus = await status.getAttribute('data-status');
+
+      if (
+        gameStatus &&
+        ['computer', 'human', 'draw'].includes(gameStatus)
+      ) {
+        break;
+      }
+    
+      const emptyCells = page.locator(
+        '[data-state="empty"]:not([disabled])'
+      );
+
+      await emptyCells.first().click();
       await page.waitForTimeout(300);
-      }
-      else if (await emptyCell.count() === 0) break;
-    }
-  }
-
-  async playGameUntilOver(maxMoves: number = 5): Promise<void> {
-    for (let i = 0; i < maxMoves; i++) {
-      let emptyCell = this.page.locator('[data-state=""]').first();
-      if (await emptyCell.count() === 0) {
-        emptyCell = this.page.locator('[data-state="empty"]').first();
-      }
-
-      if (await emptyCell.count() === 0) {
-        break;
-      }
-
-      await emptyCell.click();
-      await this.page.waitForTimeout(300);
-
-      if (await this.isGameOver()) {
-        break;
-      }
     }
   }
 
@@ -207,7 +212,6 @@ export class TicTacToePage {
     await this.difficultySelect.selectOption(difficulty);
   }
 
-  // Helper assertions
   async expectBoardVisible() {
     await expect(this.board).toBeVisible();
   }

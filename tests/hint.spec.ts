@@ -36,6 +36,6 @@ test('Hint unavailable after game end', async ({ page }) => {
   const gamePage = new TicTacToePage(page);
   await gamePage.goto();
   await gamePage.register('Amir1');
-  await gamePage.playGameThreeMoves(page)
+  await gamePage.playGameUntilEnd(page)
   await expect(page.locator('[data-testid=btn-hint]')).toHaveAttribute('disabled');
 });
